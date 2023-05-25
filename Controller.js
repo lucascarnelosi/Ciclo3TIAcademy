@@ -82,17 +82,6 @@ app.post('/itenspedido', async (req, res) => {
     });
 });
 
-app.get('/listaitempedidos', async (req, res) => {
-    await itemPedido.findAll({
-        order: [
-            ['valor', 'DESC']
-        ]
-    })
-    .then(itempedidos => {
-        res.json({itempedidos});
-    });
-});
-
 app.get('/listaservicos', async (req, res) => {
     await servico.findAll({
         // row: true
@@ -103,10 +92,51 @@ app.get('/listaservicos', async (req, res) => {
     });
 });
 
+app.get('/listaclientes', async (req, res) => {
+    await cliente.findAll({
+        order: [['nascimento', 'ASC']]
+    })
+    .then(clientes => {
+        res.json({clientes});
+    });
+});
+
+app.get('/listapedidos', async (req, res) => {
+    await pedido.findAll()
+    .then(pedidos => {
+        res.json({pedidos});
+    });
+});
+
+app.get('/listaitempedidos', async (req, res) => {
+    await itemPedido.findAll({
+        order: [
+            ['valor', 'DESC']
+        ]
+    })
+    .then(itempedidos => {
+        res.json({itempedidos});
+    }); 
+});
+
 app.get('/ofertaservicos', async (req, res) => {
     await servico.count('id')
     .then(servicos => {
         res.json({servicos});
+    });
+});
+
+app.get('/ofertaclientes', async (req, res) => {
+    await cliente.count('id')
+    .then(clientes => {
+        res.json({clientes});
+    });
+});
+
+app.get('/ofertapedidos', async (req, res) => {
+    await pedido.count('id')
+    .then(pedidos => {
+        res.json({pedidos})
     });
 });
 
@@ -126,6 +156,21 @@ app.get('/servico/:id', async (req, res) => {
     });
 });
 
+app.get('/pedidos/:id', async (req, res) => {
+    await pedido.findByPk(req.params.id, {
+        include: [
+            {
+                all: true
+            }
+        ]
+    })
+    .then(ped => {
+        return res.json(
+            {ped}
+        );
+    })
+})
+
 app.put('/atualizaservico', async (req, res) => {
     await servico.update(req.body, {
         where: {id: req.body.id}
@@ -143,51 +188,6 @@ app.put('/atualizaservico', async (req, res) => {
         });
     });
 });
-
-app.get('/listaclientes', async (req, res) => {
-    await cliente.findAll({
-        order: [['nascimento', 'ASC']]
-    })
-    .then(clientes => {
-        res.json({clientes});
-    });
-});
-
-app.get('/ofertaclientes', async (req, res) => {
-    await cliente.count('id')
-    .then(clientes => {
-        res.json({clientes});
-    });
-});
-
-app.get('/listapedidos', async (req, res) => {
-    await pedido.findAll()
-    .then(pedidos => {
-        res.json({pedidos});
-    });
-});
-
-app.get('/ofertapedidos', async (req, res) => {
-    await pedido.count('id')
-    .then(pedidos => {
-        res.json({pedidos})
-    });
-});
-
-app.get('/pedidos/:id', async (req, res) => {
-    await pedido.findByPk(req.params.id, {
-        include: [
-            {
-                all: true
-            }
-        ]
-    })
-    .then(ped => {
-        return res.json(
-            {ped}
-        );
-    })
-})
 
 app.put('/pedidos/:id/editaritem', async (req, res) => {
     const item = {
