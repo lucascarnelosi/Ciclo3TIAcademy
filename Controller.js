@@ -159,26 +159,60 @@ app.get('/servico/:id', async (req, res) => {
 app.get('/pedidos/:id', async (req, res) => {
     await pedido.findByPk(req.params.id, {
         include: [
-            {
-                all: true
-            }
+            { all: true }
         ]
     })
     .then(ped => {
         return res.json(
             {ped}
         );
-    })
-})
+    });
+});
 
-app.put('/atualizaservico', async (req, res) => {
+app.put('/atualizaservico/:id', async (req, res) => {
     await servico.update(req.body, {
-        where: {id: req.body.id}
+        where: {id: req.params.id}
     })
     .then(() => {
         return res.json({
             error: false,
             message: "Serviço atualizado com sucesso!"
+        });
+    })
+    .catch(erro => {
+        return res.status(400).json({
+            error: true,
+            message: "Erro: O serviço não pôde ser alterado."
+        });
+    });
+});
+
+app.put('/atualizacliente/:id', async (req, res) => {
+    await cliente.update(req.body, {
+        where: {id: req.params.id}
+    })
+    .then(() => {
+        return res.json({
+            error: false,
+            message: "Cliente atualizado com sucesso!"
+        });
+    })
+    .catch(erro => {
+        return res.status(400).json({
+            error: true,
+            message: "Erro: O cliente não pôde ser alterado."
+        });
+    });
+});
+
+app.put('/atualizapedido/:id', async (req, res) => {
+    await pedido.update(req.body, {
+        where: {id: req.params.id}
+    })
+    .then(() => {
+        return res.json({
+            error: false,
+            message: "Pedido atualizado com sucesso!"
         });
     })
     .catch(erro => {
@@ -218,7 +252,7 @@ app.put('/pedidos/:id/editaritem', async (req, res) => {
     .then(items => {
         return res.json({
             error: false,
-            message: 'Pedido alterado com sucesso!',
+            message: 'Item alterado com sucesso!',
             items
         });
     })
@@ -226,6 +260,108 @@ app.put('/pedidos/:id/editaritem', async (req, res) => {
         return res.status(400).json({
             error: true,
             message: 'ERRO: não foi possível alterar.'
+        });
+    });
+});
+
+app.delete('/excluirservico/:id', async (req, res) => {
+    await servico.destroy({
+        where: {id: req.params.id}
+    })
+    .then(() => {
+        return res.json({
+            error: false,
+            message: "Serviço excluído com sucesso!"
+        });
+    })
+    .catch(erro => {
+        return res.status(400).json({
+            error: true,
+            message: "Erro ao excluir serviço."
+        });
+    });
+});
+
+app.delete('/excluircliente/:id', async (req, res) => {
+    await cliente.destroy({
+        where: {id: req.params.id}
+    })
+    .then(() => {
+        return res.json({
+            error: false,
+            message: "Cliente excluído com sucesso!"
+        });
+    })
+    .catch(erro => {
+        return res.status(400).json({
+            error: true,
+            message: "Erro ao excluir cliente."
+        });
+    });
+});
+
+app.delete('/excluirpedido/:id', async (req, res) => {
+    await pedido.destroy({
+        where: {id: req.params.id}
+    })
+    .then(() => {
+        return res.json({
+            error: false,
+            message: "Pedido excluído com sucesso!"
+        });
+    })
+    .catch(erro => {
+        return res.status(400).json({
+            error: true,
+            message: "Erro ao excluir pedido."
+        });
+    });
+});
+
+app.delete('/servped/:id/excluiritem', async (req, res) => {
+    if (! await pedido.findByPk(req.params.id)) {
+        return res.status(400).json({
+            error: true,
+            message: "Pedido não foi encontrado."
+        });
+    };
+    
+    if (! await servico.findByPk(req.body.ServicoId)) {
+        return res.status(400).json({
+            error: true,
+            message: "Serviço não foi encontrado."
+        });
+    };
+
+    if (! await itemPedido.destroy({
+        where: Sequelize.and(
+            { PedidoId: req.params.id },
+            { ServicoId: req.body.ServicoId }
+        )
+    })) {
+        return res.status(400).json({
+            error: true,
+            message: "Item não foi encontrado."
+        });
+    }
+
+    await itemPedido.destroy({
+        where: Sequelize.and(
+            { PedidoId: req.params.id },
+            { ServicoId: req.body.ServicoId }
+        )
+    })
+    .then(() => {
+        return res.json({
+            error: false,
+            message: "Item excluído com êxito."
+        });
+    })
+    .catch(erro => {
+        return res.status(400).json({
+            error: true,
+            message: "Não foi possível excluir.",
+            erro
         });
     });
 });
