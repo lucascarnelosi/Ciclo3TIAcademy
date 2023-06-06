@@ -156,6 +156,24 @@ app.get('/servico/:id', async (req, res) => {
     });
 });
 
+app.get('/servico/:id/pedidos', async (req, res) => {
+    await itemPedido.findAll({
+        where: {ServicoId: req.params.id}
+    })
+    .then(item => {
+        return res.json({
+            error: false,
+            item
+        });
+    })
+    .catch(erro => {
+        return res.status(400).json({
+            error: true,
+            message: "Erro: não foi possível conectar!"
+        });
+    });
+});
+
 app.get('/pedidos/:id', async (req, res) => {
     await pedido.findByPk(req.params.id, {
         include: [
